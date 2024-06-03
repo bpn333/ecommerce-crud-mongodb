@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+    <style>
+        body{
+            background-color: #010;
+            color: white;
+            margin: 5px 30px;
+        }
+        .item-card {
+            border: 1px solid blue;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 10px;
+            width: 200px;
+            height: 100px;
+            float: left;
+            background-color: black;
+            cursor: pointer;
+        }
+        .item-card:hover{
+            background-color: aquamarine;
+        }
+        .item-name {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .item-price {
+            font-size: 14px;
+            font-weight: bold;
+            color: lime;
+        }
+        .item-description {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        #search-container {
+            max-width: 800px;
+            margin: 50px auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .search-box {
+            padding: 10px;
+            width: 70%;
+            border: none;
+            border-radius: 5px;
+            background-color: transparent;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            border: 3px solid blue;
+        }
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .add-item-btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .add-item-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="search-container">
+        <input class="search-box" onkeyup="fetch_from_query(this)">
+        <button class="add-item-btn" onclick="location.href='add.html'">Add Item</button>
+    </div>
+    <div id="items-container">
+    </div>
+
+    <script>
+        const itemsContainer = document.getElementById('items-container');
+        document.addEventListener('DOMContentLoaded', async () => {
+            await populate_first();
+        });
+        async function populate_first(){
+            try {
+                const response = await fetch('http://127.0.0.1:333/items');
+                const { count, items } = await response.json();
+                itemsContainer.innerHTML = ''
+                items.forEach(item => {
+                    const itemCard = document.createElement('div');
+                    itemCard.classList.add('item-card');
+                    itemCard.addEventListener('click',()=>{
+                        document.location.href = 'item.html?id='+item._id;
+                    })
+                    if(item.sold){
+                        itemCard.style.background = 'gray';
+                    }
+                    const itemName = document.createElement('div');
+                    itemName.classList.add('item-name');
+                    itemName.textContent = item.name;
+
+                    const itemPrice = document.createElement('div');
+                    itemPrice.classList.add('item-price');
+                    itemPrice.textContent = `$${item.price}`;
+
+                    const itemDescription = document.createElement('div');
+                    itemDescription.classList.add('item-description');
+                    itemDescription.textContent = item.description;
+
+                    itemCard.appendChild(itemName);
+                    itemCard.appendChild(itemPrice);
+                    itemCard.appendChild(itemDescription);
+
+                    itemsContainer.appendChild(itemCard);
+                });
+
+            } catch (error) {
+                console.error('Error fetching items:', error);
+            }
+        }
+        async function fetch_from_query(obj){
+            try {
+                    if(!obj.value){
+                        await populate_first();
+                        return
+                    }
+                    const response = await fetch(`http://127.0.0.1:333/search?keyword=${obj.value}`);
+                    const { count, items } = await response.json();
+
+                    let searchResultsHTML = '';
+                    if(items && items.length>0){
+                        items.forEach(item => {
+                            searchResultsHTML += `
+                                <div class="item-card">
+                                    <div class="item-name">${item.name}</div>
+                                    <div class="item-price">$${item.price}</div>
+                                    <div class="item-description">${item.description}</div>
+                                </div>
+                            `;
+                        });
+                    }
+                    else{
+                        searchResultsHTML = 'No results found';
+                    }
+
+                    itemsContainer.innerHTML = searchResultsHTML;
+                } catch (error) {
+                    console.error('Error searching items:', error);
+                }
+        }
+    </script>
+</body>
+</html>

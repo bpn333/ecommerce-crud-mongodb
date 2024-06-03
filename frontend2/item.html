@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Detail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #010;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: gray;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .item-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .item-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: green;
+            margin-bottom: 10px;
+        }
+        .item-description {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .buy-btn {
+            background-color: lime;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="item-name" id="item-name"></h1>
+        <div class="item-price" id="item-price"></div>
+        <p class="item-description" id="item-description"></p>
+        <button class="btn" id="update-btn">Update Item</button>
+        <button class="btn" id="delete-btn">Delete Item</button>
+        <button class="btn buy-btn" id="buy-btn">Buy Item</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const itemId = urlParams.get('id');
+
+                const response = await fetch('http://127.0.0.1:333/item/' + itemId);
+                const item = await response.json();
+
+                document.getElementById('item-name').textContent = item.name;
+                document.getElementById('item-price').textContent = `$${item.price}`;
+                document.getElementById('item-description').textContent = item.description;
+                if(item.sold){
+                    document.getElementById('buy-btn').style.backgroundColor = 'grey';
+                }
+                document.getElementById('update-btn').addEventListener('click', () => {
+                    document.location.href = 'update.html?id=' + itemId;
+                });
+                document.getElementById('delete-btn').addEventListener('click', async () => {
+                    const confirmation = confirm('Are you sure you want to delete this item?');
+                    if (confirmation) {
+                        const deleteResponse = await fetch('http://127.0.0.1:333/item/' + itemId, {
+                            method: 'DELETE'
+                        });
+                        const deleteResult = await deleteResponse.json();
+                        if (deleteResponse.status === 200) {
+                            document.location.href = '/frontend2';
+                        }
+                    }
+                });
+
+                document.getElementById('buy-btn').addEventListener('click', async () => {
+                    const confirmation = confirm('Are you sure you want to buy this item?');
+                    if (confirmation) {
+                        const buyResponse = await fetch('http://127.0.0.1:333/buy/' + itemId);
+                        const buyResult = await buyResponse.json();
+                        if (buyResponse.status === 200) {
+                            alert('Item purchased successfully!');
+                            location.reload();
+                        } else {
+                            alert('Failed to buy the item.');
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching item details:', error);
+            }
+        });
+    </script>
+</body>
+</html>

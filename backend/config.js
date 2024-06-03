@@ -1,0 +1,1 @@
+export const mongo_url = 'mongodb+srv://bpn333:iambpn@ecommerce.ltzzdyc.mongodb.net/items-collection?retryWrites=true&w=majority&appName=ecommerce';

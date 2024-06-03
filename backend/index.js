@@ -107,6 +107,7 @@ app.get('/buy/:id', async(request,response)=>{
         const item = await Item.findOne({_id:id});
         if(item){
             item.sold = true;
+            item.date_of_sold = new Date();
         }
         await item.save()
         return response.status(200).send(item);
